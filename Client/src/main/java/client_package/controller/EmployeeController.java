@@ -1,6 +1,6 @@
 package client_package.controller;
 
-import client_package.model.ClientDTO;
+import client_package.model.EmployeeDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,13 +15,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ClientController {
+public class EmployeeController {
     private static final String BASE_URL =
-            "http://localhost:8080/clients";
+            "http://localhost:8080/employees";
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public void createClient(ClientDTO dto) {
+    public void createEmployee(EmployeeDTO dto) {
         try {
             String json = mapper.writeValueAsString(dto);
 
@@ -37,18 +37,18 @@ public class ClientController {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     null,
-                    "Ошибка при сохранении клиента",
+                    "Ошибка при сохранении работника",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    // Получение списка всех клиентов
-    public List<ClientDTO> getAllClients() {
+    // Получение списка всех сотрудников
+    public List<EmployeeDTO> getAllEmployees() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/clients"))
+                    .uri(URI.create("http://localhost:8080/employees"))
                     .GET()
                     .build();
 
@@ -59,34 +59,32 @@ public class ClientController {
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
             JsonNode root = mapper.readTree(response.body());
-            JsonNode clientsNode = root.path("_embedded").path("clients");
+            JsonNode employeesNode = root.path("_embedded").path("employees");
 
-            if (clientsNode.isMissingNode() || !clientsNode.isArray()) {
-                clientsNode = root;
+            if (employeesNode.isMissingNode() || !employeesNode.isArray()) {
+                employeesNode = root;
             }
 
-            List<ClientDTO> clients = new ArrayList<>();
-            for (JsonNode clientNode : clientsNode) {
-                // Десериализуем остальные поля в DTO
-                ClientDTO client = mapper.treeToValue(clientNode, ClientDTO.class);
+            List<EmployeeDTO> employees = new ArrayList<>();
+            for (JsonNode empNode : employeesNode) {
+                EmployeeDTO emp = mapper.treeToValue(empNode, EmployeeDTO.class);
 
-                // Получаем id из _links.self.href
-                String href = clientNode.path("_links").path("self").path("href").asText();
+                String href = empNode.path("_links").path("self").path("href").asText();
                 if (!href.isEmpty()) {
                     String[] parts = href.split("/");
-                    client.setId(Long.parseLong(parts[parts.length - 1]));
+                    emp.setId(Long.parseLong(parts[parts.length - 1]));
                 }
 
-                clients.add(client);
+                employees.add(emp);
             }
 
-            return clients;
+            return employees;
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
                     null,
-                    "Ошибка при получении списка клиентов",
+                    "Ошибка при получении списка работников",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
@@ -94,8 +92,8 @@ public class ClientController {
         }
     }
 
-    // Редактирование клиента
-    public void updateClient(ClientDTO dto) {
+    // Редактирование сотрудника
+    public void updateEmployee(EmployeeDTO dto) {
         try {
             String json = mapper.writeValueAsString(dto);
 
@@ -111,18 +109,18 @@ public class ClientController {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     null,
-                    "Ошибка при обновлении клиента",
+                    "Ошибка при обновлении работника",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    // Удаление клиента по ID
-    public void deleteClient(Long clientId) {
+    // Удаление сотрудника по ID
+    public void deleteEmployee(Long employeeId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/" + clientId))
+                    .uri(URI.create(BASE_URL + "/" + employeeId))
                     .DELETE()
                     .build();
 
@@ -132,7 +130,7 @@ public class ClientController {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     null,
-                    "Ошибка при удалении клиента",
+                    "Ошибка при удалении работника",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );

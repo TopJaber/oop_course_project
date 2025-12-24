@@ -1,6 +1,7 @@
 package com.kirilldergunov.server.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,14 @@ public class Employee {
             meetings = new ArrayList<>();
         }
         meetings.add(meeting);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFio() {

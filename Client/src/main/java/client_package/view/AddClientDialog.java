@@ -13,8 +13,18 @@ public class AddClientDialog extends JDialog {
     private JTextField emailField = new JTextField(20);
     private JTextField noteField = new JTextField(20);
 
+    private ClientDTO client; // хранит редактируемого клиента, если есть
+
+    // Конструктор для добавления нового клиента
     public AddClientDialog(JFrame parent) {
-        super(parent, "Добавить клиента", true);
+        this(parent, null);
+    }
+
+    // Конструктор для редактирования существующего клиента
+    public AddClientDialog(JFrame parent, ClientDTO client) {
+        super(parent, client == null ? "Добавить клиента" : "Редактировать клиента", true);
+        this.client = client;
+
         setSize(400, 250);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10, 10));
@@ -44,6 +54,14 @@ public class AddClientDialog extends JDialog {
         c.gridx = 1;
         form.add(noteField, c);
 
+        // Если редактирование — заполняем поля существующими данными
+        if (client != null) {
+            fioField.setText(client.getFio());
+            phoneField.setText(client.getPhone());
+            emailField.setText(client.getEmail());
+            noteField.setText(client.getNote());
+        }
+
         JPanel buttons = new JPanel();
         JButton save = new JButton("Сохранить");
         JButton cancel = new JButton("Отмена");
@@ -67,10 +85,11 @@ public class AddClientDialog extends JDialog {
     }
 
     public ClientDTO getClientDto() {
-        ClientDTO dto = new ClientDTO();
+        ClientDTO dto = client != null ? client : new ClientDTO();
         dto.setFio(fioField.getText());
         dto.setPhone(phoneField.getText());
         dto.setEmail(emailField.getText());
+        dto.setNote(noteField.getText());
         return dto;
     }
 }

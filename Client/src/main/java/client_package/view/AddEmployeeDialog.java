@@ -1,16 +1,30 @@
 package client_package.view;
 
+import client_package.model.EmployeeDTO;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class AddEmployeeDialog extends JDialog {
+    private boolean saved = false;
+
     private JTextField fioField = new JTextField(20);
     private JTextField positionField = new JTextField(20);
     private JTextField phoneField = new JTextField(20);
     private JTextField emailField = new JTextField(20);
 
+    private EmployeeDTO employee; // редактируемый сотрудник
+
+    // Конструктор для добавления нового сотрудника
     public AddEmployeeDialog(JFrame parent) {
-        super(parent, "Добавить работника", true);
+        this(parent, null);
+    }
+
+    // Конструктор для редактирования существующего сотрудника
+    public AddEmployeeDialog(JFrame parent, EmployeeDTO employee) {
+        super(parent, employee == null ? "Добавить работника" : "Редактировать работника", true);
+        this.employee = employee;
+
         setSize(400, 250);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10, 10));
@@ -40,6 +54,14 @@ public class AddEmployeeDialog extends JDialog {
         c.gridx = 1;
         form.add(phoneField, c);
 
+        // Если редактирование — заполняем поля текущими значениями
+        if (employee != null) {
+            fioField.setText(employee.getFio());
+            positionField.setText(employee.getPosition());
+            emailField.setText(employee.getEmail());
+            phoneField.setText(employee.getPhone());
+        }
+
         JPanel buttons = new JPanel();
         JButton save = new JButton("Сохранить");
         JButton cancel = new JButton("Отмена");
@@ -47,9 +69,27 @@ public class AddEmployeeDialog extends JDialog {
         buttons.add(save);
         buttons.add(cancel);
 
+        save.addActionListener(e -> {
+            saved = true;
+            dispose();
+        });
+
         cancel.addActionListener(e -> dispose());
 
         add(form, BorderLayout.CENTER);
         add(buttons, BorderLayout.SOUTH);
+    }
+
+    public boolean isSaved() {
+        return saved;
+    }
+
+    public EmployeeDTO getEmployeeDto() {
+        EmployeeDTO dto = employee != null ? employee : new EmployeeDTO();
+        dto.setFio(fioField.getText());
+        dto.setPosition(positionField.getText());
+        dto.setEmail(emailField.getText());
+        dto.setPhone(phoneField.getText());
+        return dto;
     }
 }

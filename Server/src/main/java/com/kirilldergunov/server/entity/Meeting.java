@@ -1,6 +1,8 @@
 package com.kirilldergunov.server.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import java.time.LocalDateTime;
 
 @Entity

@@ -1,11 +1,11 @@
 package client_package.model;
 
-public class ClientDTO {
+public class EmployeeDTO {
     private Long id;
     private String fio;
-    private String phone;
+    private String position;
     private String email;
-    private String note;
+    private String phone;
 
     public Long getId() {
         return id;
@@ -23,12 +23,12 @@ public class ClientDTO {
         this.fio = fio;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPosition() {
+        return position;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public String getEmail() {
@@ -39,11 +39,11 @@ public class ClientDTO {
         this.email = email;
     }
 
-    public String getNote() {
-        return note;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }
