@@ -24,7 +24,6 @@ public class MeetingPanel extends JPanel {
     private EmployeeController employeeController;
     private JFrame parentFrame;
 
-    // 🔥 Храним реальные DTO
     private List<MeetingDTO> currentMeetings = List.of();
 
     public MeetingPanel(MeetingController meetingController,

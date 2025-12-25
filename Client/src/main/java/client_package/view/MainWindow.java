@@ -18,19 +18,15 @@ public class MainWindow extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // Сначала создаём контроллеры клиентов и сотрудников
         ClientController clientController = new ClientController();
         EmployeeController employeeController = new EmployeeController();
 
-        // Передаём их в контроллер встреч
         MeetingController meetingController = new MeetingController(clientController, employeeController);
 
-        // Панели
         clientPanel = new ClientPanel(clientController, this);
         employeePanel = new EmployeePanel(employeeController, this);
         meetingPanel = new MeetingPanel(meetingController, clientController, employeeController, this);
 
-        // Добавляем вкладки
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Клиенты", clientPanel);
         tabs.addTab("Работники", employeePanel);
