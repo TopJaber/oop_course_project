@@ -8,7 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
-
     private ClientPanel clientPanel;
     private EmployeePanel employeePanel;
     private MeetingPanel meetingPanel;

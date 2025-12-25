@@ -46,4 +46,9 @@ public class ClientDTO {
     public void setNote(String note) {
         this.note = note;
     }
+
+    @Override
+    public String toString() {
+        return fio;
+    }
 }

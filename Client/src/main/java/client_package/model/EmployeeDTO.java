@@ -46,4 +46,9 @@ public class EmployeeDTO {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    @Override
+    public String toString() {
+        return fio;
+    }
 }

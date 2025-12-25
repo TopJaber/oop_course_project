@@ -17,6 +17,7 @@ import javax.swing.event.DocumentListener;
 import java.time.LocalDateTime;
 
 public class MeetingPanel extends JPanel {
+
     private JTable meetingTable;
     private JButton addButton, editButton, deleteButton, refreshButton;
     private JTextField filterField;
@@ -30,6 +31,7 @@ public class MeetingPanel extends JPanel {
                         ClientController clientController,
                         EmployeeController employeeController,
                         JFrame parentFrame) {
+
         this.meetingController = meetingController;
         this.clientController = clientController;
         this.employeeController = employeeController;
@@ -52,7 +54,7 @@ public class MeetingPanel extends JPanel {
         // Панель кнопок
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         addButton = new JButton("Добавить встречу");
-        editButton = new JButton("Изменить");
+        editButton = new JButton("Редактировать");
         deleteButton = new JButton("Удалить");
         refreshButton = new JButton("Обновить");
 
@@ -71,10 +73,10 @@ public class MeetingPanel extends JPanel {
     }
 
     private void initButtons() {
+        // Добавление встречи
         addButton.addActionListener(e -> {
-            AddMeetingDialog dialog = new AddMeetingDialog(parentFrame, clientController, employeeController);
+            AddMeetingDialog dialog = new AddMeetingDialog(parentFrame, null, clientController, employeeController);
             dialog.setVisible(true);
-
             if (dialog.isSaved()) {
                 MeetingDTO dto = dialog.getMeetingDto();
                 meetingController.createMeeting(dto);
@@ -82,17 +84,16 @@ public class MeetingPanel extends JPanel {
             }
         });
 
+        // Редактирование встречи
         editButton.addActionListener(e -> {
             int selectedRow = meetingTable.getSelectedRow();
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(parentFrame, "Выберите встречу для редактирования");
                 return;
             }
-
             MeetingDTO selectedMeeting = getSelectedMeetingFromTable(selectedRow);
             AddMeetingDialog dialog = new AddMeetingDialog(parentFrame, selectedMeeting, clientController, employeeController);
             dialog.setVisible(true);
-
             if (dialog.isSaved()) {
                 MeetingDTO updatedMeeting = dialog.getMeetingDto();
                 meetingController.updateMeeting(updatedMeeting);
@@ -100,13 +101,13 @@ public class MeetingPanel extends JPanel {
             }
         });
 
+        // Удаление встречи
         deleteButton.addActionListener(e -> {
             int selectedRow = meetingTable.getSelectedRow();
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(parentFrame, "Выберите встречу для удаления");
                 return;
             }
-
             MeetingDTO selectedMeeting = getSelectedMeetingFromTable(selectedRow);
             int confirm = JOptionPane.showConfirmDialog(parentFrame,
                     "Удалить встречу с клиентом " + selectedMeeting.getClientFio() + "?",
@@ -117,14 +118,18 @@ public class MeetingPanel extends JPanel {
             }
         });
 
+        // Обновление таблицы
         refreshButton.addActionListener(e -> refreshTable());
     }
 
     private void initFilter() {
-        filterField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filterTable(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filterTable(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filterTable(); }
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { filterTable(); }
         });
     }
 
@@ -136,7 +141,7 @@ public class MeetingPanel extends JPanel {
         }
 
         List<MeetingDTO> filtered = meetingController.getAllMeetings().stream()
-                .filter(m -> m.getClientFio().toLowerCase().contains(filterText))
+                .filter(m -> m.getClientFio() != null && m.getClientFio().toLowerCase().contains(filterText))
                 .collect(Collectors.toList());
 
         setTableData(filtered);
@@ -145,26 +150,22 @@ public class MeetingPanel extends JPanel {
     private MeetingDTO getSelectedMeetingFromTable(int row) {
         DefaultTableModel model = (DefaultTableModel) meetingTable.getModel();
         MeetingDTO meeting = new MeetingDTO();
-
-        Object idObj = model.getValueAt(row, 0);
-        if (idObj instanceof Number) {
-            meeting.setId(((Number) idObj).longValue());
-        } else {
-            throw new RuntimeException("Некорректный ID встречи в таблице");
-        }
-
+        meeting.setId((Long) model.getValueAt(row, 0));
         meeting.setClientFio((String) model.getValueAt(row, 1));
         meeting.setEmployeeFio((String) model.getValueAt(row, 2));
         meeting.setDatetime((LocalDateTime) model.getValueAt(row, 3));
         meeting.setPlace((String) model.getValueAt(row, 4));
         meeting.setComment((String) model.getValueAt(row, 5));
-
         return meeting;
     }
 
     public void refreshTable() {
-        List<MeetingDTO> meetings = meetingController.getAllMeetings();
-        setTableData(meetings);
+        try {
+            List<MeetingDTO> meetings = meetingController.getAllMeetings();
+            setTableData(meetings);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Ошибка при получении списка встреч", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void setTableData(List<MeetingDTO> meetings) {
@@ -173,7 +174,7 @@ public class MeetingPanel extends JPanel {
 
         for (int i = 0; i < meetings.size(); i++) {
             MeetingDTO m = meetings.get(i);
-            data[i][0] = m.getId(); // ID обязательно Long
+            data[i][0] = m.getId();
             data[i][1] = m.getClientFio();
             data[i][2] = m.getEmployeeFio();
             data[i][3] = m.getDatetime();
@@ -188,12 +189,4 @@ public class MeetingPanel extends JPanel {
             }
         });
     }
-
-    // Геттеры
-    public JTable getMeetingTable() { return meetingTable; }
-    public JButton getAddButton() { return addButton; }
-    public JButton getEditButton() { return editButton; }
-    public JButton getDeleteButton() { return deleteButton; }
-    public JButton getRefreshButton() { return refreshButton; }
-    public JTextField getFilterField() { return filterField; }
 }
