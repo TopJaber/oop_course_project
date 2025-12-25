@@ -2,10 +2,7 @@ package client_package.view;
 
 import client_package.controller.ClientController;
 import client_package.controller.EmployeeController;
-import client_package.model.ClientDTO;
-import client_package.model.EmployeeDTO;
 import client_package.model.MeetingDTO;
-import client_package.model.Status;
 
 import javax.swing.*;
 import java.awt.*;
@@ -128,7 +125,14 @@ public class AddMeetingDialog extends JDialog {
     }
 
     public MeetingDTO getMeetingDto() {
-        MeetingDTO dto = meeting != null ? meeting : new MeetingDTO();
+        MeetingDTO dto;
+
+        if (meeting != null) {
+            dto = meeting;
+        } else {
+            // создание
+            dto = new MeetingDTO();
+        }
 
         dto.setClientId(clientIds[clientBox.getSelectedIndex()]);
         dto.setClientFio((String) clientBox.getSelectedItem());
@@ -137,7 +141,9 @@ public class AddMeetingDialog extends JDialog {
         dto.setEmployeeFio((String) employeeBox.getSelectedItem());
 
         Date date = (Date) dateTimeSpinner.getValue();
-        dto.setDatetime(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+        dto.setDatetime(LocalDateTime.ofInstant(
+                date.toInstant(), ZoneId.systemDefault()
+        ));
 
         dto.setPlace(placeField.getText());
         dto.setComment(commentField.getText());

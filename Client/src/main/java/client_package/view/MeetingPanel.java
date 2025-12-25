@@ -8,13 +8,10 @@ import client_package.model.MeetingDTO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.time.LocalDateTime;
 
 public class MeetingPanel extends JPanel {
 
@@ -26,6 +23,9 @@ public class MeetingPanel extends JPanel {
     private ClientController clientController;
     private EmployeeController employeeController;
     private JFrame parentFrame;
+
+    // 🔥 Храним реальные DTO
+    private List<MeetingDTO> currentMeetings = List.of();
 
     public MeetingPanel(MeetingController meetingController,
                         ClientController clientController,
@@ -39,21 +39,19 @@ public class MeetingPanel extends JPanel {
 
         setLayout(new BorderLayout(10, 10));
 
-        // Верхняя панель — фильтр
         JPanel topPanel = new JPanel(new BorderLayout());
         filterField = new JTextField();
         topPanel.add(new JLabel("Фильтр по клиенту: "), BorderLayout.WEST);
         topPanel.add(filterField, BorderLayout.CENTER);
 
-        // Таблица встреч
         meetingTable = new JTable();
         meetingTable.setRowHeight(28);
         meetingTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         JScrollPane scrollPane = new JScrollPane(meetingTable);
 
-        // Панель кнопок
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        addButton = new JButton("Добавить встречу");
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        addButton = new JButton("Добавить");
         editButton = new JButton("Редактировать");
         deleteButton = new JButton("Удалить");
         refreshButton = new JButton("Обновить");
@@ -73,104 +71,94 @@ public class MeetingPanel extends JPanel {
     }
 
     private void initButtons() {
-        // Добавление встречи
+
         addButton.addActionListener(e -> {
-            AddMeetingDialog dialog = new AddMeetingDialog(parentFrame, null, clientController, employeeController);
+            AddMeetingDialog dialog =
+                    new AddMeetingDialog(parentFrame, null, clientController, employeeController);
             dialog.setVisible(true);
+
             if (dialog.isSaved()) {
-                MeetingDTO dto = dialog.getMeetingDto();
-                meetingController.createMeeting(dto);
+                meetingController.createMeeting(dialog.getMeetingDto());
                 refreshTable();
             }
         });
 
-        // Редактирование встречи
         editButton.addActionListener(e -> {
-            int selectedRow = meetingTable.getSelectedRow();
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(parentFrame, "Выберите встречу для редактирования");
+            int row = meetingTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Выберите встречу");
                 return;
             }
-            MeetingDTO selectedMeeting = getSelectedMeetingFromTable(selectedRow);
-            AddMeetingDialog dialog = new AddMeetingDialog(parentFrame, selectedMeeting, clientController, employeeController);
+
+            MeetingDTO selected = currentMeetings.get(row);
+
+            AddMeetingDialog dialog =
+                    new AddMeetingDialog(parentFrame, selected, clientController, employeeController);
             dialog.setVisible(true);
+
             if (dialog.isSaved()) {
-                MeetingDTO updatedMeeting = dialog.getMeetingDto();
-                meetingController.updateMeeting(updatedMeeting);
+                meetingController.updateMeeting(dialog.getMeetingDto());
                 refreshTable();
             }
         });
 
-        // Удаление встречи
         deleteButton.addActionListener(e -> {
-            int selectedRow = meetingTable.getSelectedRow();
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(parentFrame, "Выберите встречу для удаления");
+            int row = meetingTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Выберите встречу");
                 return;
             }
-            MeetingDTO selectedMeeting = getSelectedMeetingFromTable(selectedRow);
-            int confirm = JOptionPane.showConfirmDialog(parentFrame,
-                    "Удалить встречу с клиентом " + selectedMeeting.getClientFio() + "?",
-                    "Подтвердите удаление", JOptionPane.YES_NO_OPTION);
+
+            MeetingDTO selected = currentMeetings.get(row);
+
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Удалить встречу с клиентом " + selected.getClientFio() + "?",
+                    "Подтвердите",
+                    JOptionPane.YES_NO_OPTION
+            );
+
             if (confirm == JOptionPane.YES_OPTION) {
-                meetingController.deleteMeeting(selectedMeeting.getId());
+                meetingController.deleteMeeting(selected.getId());
                 refreshTable();
             }
         });
 
-        // Обновление таблицы
         refreshButton.addActionListener(e -> refreshTable());
     }
 
     private void initFilter() {
         filterField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { filterTable(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { filterTable(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { filterTable(); }
+            public void insertUpdate(DocumentEvent e) { filter(); }
+            public void removeUpdate(DocumentEvent e) { filter(); }
+            public void changedUpdate(DocumentEvent e) { filter(); }
         });
     }
 
-    private void filterTable() {
-        String filterText = filterField.getText().trim().toLowerCase();
-        if (filterText.isEmpty()) {
-            refreshTable();
+    private void filter() {
+        String text = filterField.getText().toLowerCase().trim();
+
+        if (text.isEmpty()) {
+            setTableData(currentMeetings);
             return;
         }
 
-        List<MeetingDTO> filtered = meetingController.getAllMeetings().stream()
-                .filter(m -> m.getClientFio() != null && m.getClientFio().toLowerCase().contains(filterText))
-                .collect(Collectors.toList());
+        List<MeetingDTO> filtered = currentMeetings.stream()
+                .filter(m -> m.getClientFio() != null &&
+                        m.getClientFio().toLowerCase().contains(text))
+                .toList();
 
         setTableData(filtered);
     }
 
-    private MeetingDTO getSelectedMeetingFromTable(int row) {
-        DefaultTableModel model = (DefaultTableModel) meetingTable.getModel();
-        MeetingDTO meeting = new MeetingDTO();
-        meeting.setId((Long) model.getValueAt(row, 0));
-        meeting.setClientFio((String) model.getValueAt(row, 1));
-        meeting.setEmployeeFio((String) model.getValueAt(row, 2));
-        meeting.setDatetime((LocalDateTime) model.getValueAt(row, 3));
-        meeting.setPlace((String) model.getValueAt(row, 4));
-        meeting.setComment((String) model.getValueAt(row, 5));
-        return meeting;
-    }
-
     public void refreshTable() {
-        try {
-            List<MeetingDTO> meetings = meetingController.getAllMeetings();
-            setTableData(meetings);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ошибка при получении списка встреч", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        currentMeetings = meetingController.getAllMeetings();
+        setTableData(currentMeetings);
     }
 
     private void setTableData(List<MeetingDTO> meetings) {
-        String[] columns = {"ID", "Клиент", "Сотрудник", "Дата/Время", "Место", "Комментарий"};
-        Object[][] data = new Object[meetings.size()][columns.length];
+        String[] cols = {"ID", "Клиент", "Сотрудник", "Дата", "Место", "Комментарий"};
+        Object[][] data = new Object[meetings.size()][cols.length];
 
         for (int i = 0; i < meetings.size(); i++) {
             MeetingDTO m = meetings.get(i);
@@ -182,9 +170,8 @@ public class MeetingPanel extends JPanel {
             data[i][5] = m.getComment();
         }
 
-        meetingTable.setModel(new DefaultTableModel(data, columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
+        meetingTable.setModel(new DefaultTableModel(data, cols) {
+            public boolean isCellEditable(int r, int c) {
                 return false;
             }
         });

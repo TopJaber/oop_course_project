@@ -53,33 +53,42 @@ public class MeetingController {
             if (!meetingsNode.isArray()) return Collections.emptyList();
 
             List<MeetingDTO> meetings = new ArrayList<>();
+
             for (JsonNode node : meetingsNode) {
                 MeetingDTO dto = new MeetingDTO();
-                dto.setId(node.path("id").asLong(0));
+
+                String selfHref = node.path("_links").path("self").path("href").asText();
+                Long id = Long.parseLong(selfHref.substring(selfHref.lastIndexOf('/') + 1));
+                dto.setId(id);
+
                 dto.setDatetime(LocalDateTime.parse(node.path("datetime").asText()));
                 dto.setStatus(Status.valueOf(node.path("status").asText("SCHEDULED")));
                 dto.setPlace(node.path("place").asText(""));
                 dto.setComment(node.path("comment").asText(""));
 
-                // Подгружаем клиента
+                // Клиент
                 String clientLink = node.path("_links").path("client").path("href").asText(null);
                 if (clientLink != null) {
                     HttpRequest cReq = HttpRequest.newBuilder().uri(URI.create(clientLink)).GET().build();
                     HttpResponse<String> cResp = HttpClient.newHttpClient()
                             .send(cReq, HttpResponse.BodyHandlers.ofString());
                     JsonNode cNode = mapper.readTree(cResp.body());
-                    dto.setClientId(cNode.path("id").asLong());
+
+                    String cSelf = cNode.path("_links").path("self").path("href").asText();
+                    dto.setClientId(Long.parseLong(cSelf.substring(cSelf.lastIndexOf('/') + 1)));
                     dto.setClientFio(cNode.path("fio").asText());
                 }
 
-                // Подгружаем сотрудника
+                // Сотрудник
                 String empLink = node.path("_links").path("employee").path("href").asText(null);
                 if (empLink != null) {
                     HttpRequest eReq = HttpRequest.newBuilder().uri(URI.create(empLink)).GET().build();
                     HttpResponse<String> eResp = HttpClient.newHttpClient()
                             .send(eReq, HttpResponse.BodyHandlers.ofString());
                     JsonNode eNode = mapper.readTree(eResp.body());
-                    dto.setEmployeeId(eNode.path("id").asLong());
+
+                    String eSelf = eNode.path("_links").path("self").path("href").asText();
+                    dto.setEmployeeId(Long.parseLong(eSelf.substring(eSelf.lastIndexOf('/') + 1)));
                     dto.setEmployeeFio(eNode.path("fio").asText());
                 }
 
@@ -90,7 +99,10 @@ public class MeetingController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Ошибка при получении списка встреч", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Ошибка при получении списка встреч",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
             return Collections.emptyList();
         }
     }
