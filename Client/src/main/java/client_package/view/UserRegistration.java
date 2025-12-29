@@ -20,9 +20,6 @@ public class UserRegistration extends JFrame {
     private JPasswordField passwordField;
     private JButton btnNewButton;
 
-    /**
-     * Launch the application.
-     */
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -35,10 +32,6 @@ public class UserRegistration extends JFrame {
             }
         });
     }
-
-    /**
-     * Create the frame.
-     */
 
     public UserRegistration() {
         setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\User\\Desktop\\STDM.jpg"));

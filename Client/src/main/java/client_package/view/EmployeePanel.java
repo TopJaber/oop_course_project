@@ -32,6 +32,8 @@ public class EmployeePanel extends JPanel {
         editButton = new JButton("Изменить");
         deleteButton = new JButton("Удалить");
 
+        deleteButton.setBackground(Color.RED);
+
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttons.add(addButton);
         buttons.add(editButton);

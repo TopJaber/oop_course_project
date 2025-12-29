@@ -4,6 +4,7 @@ import client_package.controller.ClientController;
 import client_package.controller.EmployeeController;
 import client_package.controller.MeetingController;
 import client_package.model.MeetingDTO;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -16,7 +17,7 @@ import javax.swing.event.DocumentListener;
 public class MeetingPanel extends JPanel {
 
     private JTable meetingTable;
-    private JButton addButton, editButton, deleteButton, refreshButton;
+    private JButton addButton, editButton, deleteButton;
     private JTextField filterField;
 
     private MeetingController meetingController;
@@ -37,8 +38,10 @@ public class MeetingPanel extends JPanel {
         this.parentFrame = parentFrame;
 
         setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel topPanel = new JPanel(new BorderLayout());
+
         filterField = new JTextField();
         topPanel.add(new JLabel("Фильтр по клиенту: "), BorderLayout.WEST);
         topPanel.add(filterField, BorderLayout.CENTER);
@@ -50,15 +53,15 @@ public class MeetingPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(meetingTable);
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        addButton = new JButton("Добавить");
-        editButton = new JButton("Редактировать");
+        addButton = new JButton("Добавить встречу");
+        editButton = new JButton("Изменить");
         deleteButton = new JButton("Удалить");
-        refreshButton = new JButton("Обновить");
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
-        buttonPanel.add(refreshButton);
+
+        deleteButton.setBackground(Color.RED);
 
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
@@ -122,8 +125,6 @@ public class MeetingPanel extends JPanel {
                 refreshTable();
             }
         });
-
-        refreshButton.addActionListener(e -> refreshTable());
     }
 
     private void initFilter() {
