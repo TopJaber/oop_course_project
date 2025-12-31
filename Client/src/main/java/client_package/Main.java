@@ -19,8 +19,13 @@ public class Main {
         UIManager.put("Button.arc", 15);
         UIManager.put("Button.font", new Font("Tahoma", Font.BOLD, 14));
         UIManager.put("Button.background", new Color(0x4CAF50));
-        UIManager.put("Button.foreground", Color.WHITE);
+        UIManager.put("Button.hoverBackground", new Color(0x3A883D));
+        UIManager.put("Button.pressedBackground", new Color(0x2C7130));
+        UIManager.put("Button.focusedBackground", new Color(0x4CAF50));
+        UIManager.put("Button.disabledBackground", new Color(0xA5D6A7));
+
         UIManager.put("Button.focusPainted", false);
+        UIManager.put("Button.foreground", Color.WHITE);
         SwingUtilities.invokeLater(() -> {
             MainWindow window = new MainWindow();
             window.setVisible(true);

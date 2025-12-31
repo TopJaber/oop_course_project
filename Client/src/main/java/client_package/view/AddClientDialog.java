@@ -54,7 +54,6 @@ public class AddClientDialog extends JDialog {
         c.gridx = 1;
         form.add(noteField, c);
 
-        // Если редактирование — заполняем поля существующими данными
         if (client != null) {
             fioField.setText(client.getFio());
             phoneField.setText(client.getPhone());
@@ -65,6 +64,10 @@ public class AddClientDialog extends JDialog {
         JPanel buttons = new JPanel();
         JButton save = new JButton("Сохранить");
         JButton cancel = new JButton("Отмена");
+
+        cancel.setBackground(new Color(0xF44336));
+        cancel.putClientProperty("JButton.hoverBackground", new Color(0xE53935));
+        cancel.putClientProperty("JButton.pressedBackground", new Color(0xC62828));
 
         buttons.add(save);
         buttons.add(cancel);

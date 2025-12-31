@@ -66,6 +66,10 @@ public class AddEmployeeDialog extends JDialog {
         JButton save = new JButton("Сохранить");
         JButton cancel = new JButton("Отмена");
 
+        cancel.setBackground(new Color(0xF44336));
+        cancel.putClientProperty("JButton.hoverBackground", new Color(0xE53935));
+        cancel.putClientProperty("JButton.pressedBackground", new Color(0xC62828));
+
         buttons.add(save);
         buttons.add(cancel);
 

@@ -61,7 +61,9 @@ public class MeetingPanel extends JPanel {
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
 
-        deleteButton.setBackground(Color.RED);
+        deleteButton.setBackground(new Color(0xF44336));
+        deleteButton.putClientProperty("JButton.hoverBackground", new Color(0xE53935));
+        deleteButton.putClientProperty("JButton.pressedBackground", new Color(0xC62828));
 
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);

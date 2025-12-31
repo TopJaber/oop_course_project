@@ -106,6 +106,11 @@ public class AddMeetingDialog extends JDialog {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveBtn = new JButton("Сохранить");
         JButton cancelBtn = new JButton("Отмена");
+
+        cancelBtn.setBackground(new Color(0xF44336));
+        cancelBtn.putClientProperty("JButton.hoverBackground", new Color(0xE53935));
+        cancelBtn.putClientProperty("JButton.pressedBackground", new Color(0xC62828));
+
         buttons.add(saveBtn);
         buttons.add(cancelBtn);
 
