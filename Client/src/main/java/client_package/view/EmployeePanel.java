@@ -107,6 +107,7 @@ public class EmployeePanel extends JPanel {
         employee.setFio((String) model.getValueAt(row, 1));
         employee.setPosition((String) model.getValueAt(row, 2));
         employee.setEmail((String) model.getValueAt(row, 3));
+        employee.setPhone((String) model.getValueAt(row, 4));
         return employee;
     }
 

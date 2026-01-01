@@ -108,6 +108,7 @@ public class ClientPanel extends JPanel {
         client.setFio((String) model.getValueAt(row, 1));
         client.setPhone((String) model.getValueAt(row, 2));
         client.setEmail((String) model.getValueAt(row, 3));
+        client.setNote((String) model.getValueAt(row, 4));
         return client;
     }
 

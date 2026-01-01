@@ -75,7 +75,6 @@ public class MeetingPanel extends JPanel {
     }
 
     private void initButtons() {
-
         addButton.addActionListener(e -> {
             AddMeetingDialog dialog =
                     new AddMeetingDialog(parentFrame, null, clientController, employeeController);
