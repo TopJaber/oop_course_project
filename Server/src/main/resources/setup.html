@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form th:action="@{/setup}" th:object="${admin}" method="post">
+    <label>Логин:</label>
+    <input type="text" th:field="*{username}" />
+
+    <label>Пароль:</label>
+    <input type="password" th:field="*{password}" />
+
+    <button type="submit">Создать администратора</button>
+</form>
+</body>
+</html>

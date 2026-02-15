@@ -58,7 +58,7 @@ public class Employee {
         return fio;
     }
 
-    public void setFio(String name) {
+    public void setFio(String fio) {
         this.fio = fio;
     }
 

@@ -8,32 +8,73 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class EmployeeApi {
-    private static final String BASE_URL = "http://localhost:8080/employees";
+    private static final String BASE_URL = "http://localhost:8080/api/employees";
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     public List<EmployeeDTO> getAllEmployees() {
         try {
-            URL url = new URL(BASE_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8080/api/employees"))
+                    .header("Authorization", AuthContext.getAuthHeader())
+                    .GET()
+                    .build();
 
-            InputStream is = conn.getInputStream();
-            JsonNode root = mapper.readTree(is);
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-            JsonNode content = root.get("_embedded").get("employees");
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Ошибка: " + response.body());
+            }
 
-            return mapper.readValue(
-                    content.toString(),
-                    new TypeReference<List<EmployeeDTO>>() {}
-            );
+            ObjectMapper mapper = new ObjectMapper();
+
+            JsonNode root = mapper.readTree(response.body());
+            JsonNode employeesNode = root.path("_embedded").path("employees");
+
+            if (!employeesNode.isArray()) {
+                throw new RuntimeException("Некорректный ответ сервера");
+            }
+
+            List<EmployeeDTO> employees = new ArrayList<>();
+
+            for (JsonNode employeeNode : employeesNode) {
+
+                EmployeeDTO employee =
+                        mapper.treeToValue(employeeNode, EmployeeDTO.class);
+
+                String href = employeeNode
+                        .path("_links")
+                        .path("self")
+                        .path("href")
+                        .asText();
+
+                if (!href.isEmpty()) {
+                    employee.setId(
+                            Long.parseLong(
+                                    href.substring(href.lastIndexOf('/') + 1)
+                            )
+                    );
+                }
+
+                employees.add(employee);
+            }
+
+            return employees;
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return Collections.emptyList();
         }
     }
 }

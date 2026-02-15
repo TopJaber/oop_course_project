@@ -1,5 +1,7 @@
 package client_package.controller;
 
+import client_package.api.AuthContext;
+import client_package.api.ClientApi;
 import client_package.model.ClientDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -17,8 +19,9 @@ import java.util.List;
 
 public class ClientController {
     private static final String BASE_URL =
-            "http://localhost:8080/clients";
+            "http://localhost:8080/api/clients";
 
+    private final ClientApi clientApi = new ClientApi();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public void createClient(ClientDTO dto) {
@@ -27,71 +30,26 @@ public class ClientController {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL))
+                    .header("Authorization", AuthContext.getAuthHeader()) // ← ВАЖНО
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response =
+                    HttpClient.newHttpClient()
+                            .send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("STATUS: " + response.statusCode());
+            System.out.println("BODY: " + response.body());
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Ошибка при сохранении клиента",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            e.printStackTrace();
         }
     }
 
     // Получение списка всех клиентов
     public List<ClientDTO> getAllClients() {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/clients"))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            JsonNode root = mapper.readTree(response.body());
-            JsonNode clientsNode = root.path("_embedded").path("clients");
-
-            if (clientsNode.isMissingNode() || !clientsNode.isArray()) {
-                clientsNode = root;
-            }
-
-            List<ClientDTO> clients = new ArrayList<>();
-            for (JsonNode clientNode : clientsNode) {
-                // Десериализуем остальные поля в DTO
-                ClientDTO client = mapper.treeToValue(clientNode, ClientDTO.class);
-
-                // Получаем id из _links.self.href
-                String href = clientNode.path("_links").path("self").path("href").asText();
-                if (!href.isEmpty()) {
-                    String[] parts = href.split("/");
-                    client.setId(Long.parseLong(parts[parts.length - 1]));
-                }
-
-                clients.add(client);
-            }
-
-            return clients;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Ошибка при получении списка клиентов",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return Collections.emptyList();
-        }
+        return clientApi.getAllClients();
     }
 
     // Редактирование клиента
@@ -101,12 +59,17 @@ public class ClientController {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/" + dto.getId()))
+                    .header("Authorization", AuthContext.getAuthHeader()) // ← ВАЖНО
                     .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response =
+                    HttpClient.newHttpClient()
+                            .send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("STATUS: " + response.statusCode());
+            System.out.println("BODY: " + response.body());
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
@@ -123,12 +86,17 @@ public class ClientController {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/" + clientId))
+                    .header("Authorization", AuthContext.getAuthHeader()) // ← ВАЖНО
+                    .header("Content-Type", "application/json")
                     .DELETE()
                     .build();
 
-            HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response =
+                    HttpClient.newHttpClient()
+                            .send(request, HttpResponse.BodyHandlers.ofString());
 
+            System.out.println("STATUS: " + response.statusCode());
+            System.out.println("BODY: " + response.body());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     null,

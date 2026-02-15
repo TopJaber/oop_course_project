@@ -1,38 +1,63 @@
 package client_package.api;
 
 import client_package.model.ClientDTO;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ClientApi {
-    private static final String BASE_URL = "http://localhost:8080/clients";
 
+    private static final String BASE_URL = "http://localhost:8080/api/clients";
     private final ObjectMapper mapper = new ObjectMapper();
 
     public List<ClientDTO> getAllClients() {
         try {
-            URL url = new URL(BASE_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8080/api/clients"))
+                    .header("Authorization", AuthContext.getAuthHeader())
+                    .GET()
+                    .build();
 
-            InputStream is = conn.getInputStream();
-            JsonNode root = mapper.readTree(is);
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-            JsonNode content = root.get("_embedded").get("clients");
+            ObjectMapper mapper = new ObjectMapper();
 
-            return mapper.readValue(
-                    content.toString(),
-                    new TypeReference<List<ClientDTO>>() {}
-            );
+            JsonNode root = mapper.readTree(response.body());
+            JsonNode clientsNode = root.path("_embedded").path("clients");
+
+            if (!clientsNode.isArray()) {
+                throw new RuntimeException("Некорректный ответ сервера");
+            }
+
+            List<ClientDTO> clients = new ArrayList<>();
+            for (JsonNode clientNode : clientsNode) {
+                ClientDTO client = mapper.treeToValue(clientNode, ClientDTO.class);
+
+                String href = clientNode.path("_links").path("self").path("href").asText();
+                if (!href.isEmpty()) {
+                    client.setId(
+                            Long.parseLong(href.substring(href.lastIndexOf('/') + 1))
+                    );
+                }
+
+                clients.add(client);
+            }
+
+            return clients;
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return Collections.emptyList();
         }
     }
 }

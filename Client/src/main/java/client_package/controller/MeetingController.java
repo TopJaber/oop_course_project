@@ -1,5 +1,7 @@
 package client_package.controller;
 
+import client_package.api.AuthContext;
+import client_package.api.MeetingApi;
 import client_package.model.ClientDTO;
 import client_package.model.EmployeeDTO;
 import client_package.model.MeetingDTO;
@@ -23,9 +25,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class MeetingController {
-    private static final String BASE_URL = "http://localhost:8080/meetings";
+    private static final String BASE_URL = "http://localhost:8080/api/meetings";
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private final MeetingApi meetingApi = new MeetingApi();
     private final ClientController clientController;
     private final EmployeeController employeeController;
 
@@ -36,75 +39,7 @@ public class MeetingController {
 
     // Получение всех встреч
     public List<MeetingDTO> getAllMeetings() {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            JsonNode root = mapper.readTree(response.body());
-            JsonNode meetingsNode = root.path("_embedded").path("meetings");
-
-            if (!meetingsNode.isArray()) return Collections.emptyList();
-
-            List<MeetingDTO> meetings = new ArrayList<>();
-
-            for (JsonNode node : meetingsNode) {
-                MeetingDTO dto = new MeetingDTO();
-
-                String selfHref = node.path("_links").path("self").path("href").asText();
-                Long id = Long.parseLong(selfHref.substring(selfHref.lastIndexOf('/') + 1));
-                dto.setId(id);
-
-                dto.setDatetime(LocalDateTime.parse(node.path("datetime").asText()));
-                dto.setStatus(Status.valueOf(node.path("status").asText("SCHEDULED")));
-                dto.setPlace(node.path("place").asText(""));
-                dto.setComment(node.path("comment").asText(""));
-
-                // Клиент
-                String clientLink = node.path("_links").path("client").path("href").asText(null);
-                if (clientLink != null) {
-                    HttpRequest cReq = HttpRequest.newBuilder().uri(URI.create(clientLink)).GET().build();
-                    HttpResponse<String> cResp = HttpClient.newHttpClient()
-                            .send(cReq, HttpResponse.BodyHandlers.ofString());
-                    JsonNode cNode = mapper.readTree(cResp.body());
-
-                    String cSelf = cNode.path("_links").path("self").path("href").asText();
-                    dto.setClientId(Long.parseLong(cSelf.substring(cSelf.lastIndexOf('/') + 1)));
-                    dto.setClientFio(cNode.path("fio").asText());
-                }
-
-                // Сотрудник
-                String empLink = node.path("_links").path("employee").path("href").asText(null);
-                if (empLink != null) {
-                    HttpRequest eReq = HttpRequest.newBuilder().uri(URI.create(empLink)).GET().build();
-                    HttpResponse<String> eResp = HttpClient.newHttpClient()
-                            .send(eReq, HttpResponse.BodyHandlers.ofString());
-                    JsonNode eNode = mapper.readTree(eResp.body());
-
-                    String eSelf = eNode.path("_links").path("self").path("href").asText();
-                    dto.setEmployeeId(Long.parseLong(eSelf.substring(eSelf.lastIndexOf('/') + 1)));
-                    dto.setEmployeeFio(eNode.path("fio").asText());
-                }
-
-                meetings.add(dto);
-            }
-
-            return meetings;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                    "Ошибка при получении списка встреч",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return Collections.emptyList();
-        }
+        return meetingApi.getAllMeetings();
     }
 
     // Создание встречи
@@ -130,6 +65,7 @@ public class MeetingController {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL))
+                    .header("Authorization", AuthContext.getAuthHeader())
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -170,6 +106,7 @@ public class MeetingController {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/" + dto.getId()))
+                    .header("Authorization", AuthContext.getAuthHeader())
                     .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -191,6 +128,8 @@ public class MeetingController {
     public void deleteMeeting(Long meetingId) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
+                    .header("Authorization", AuthContext.getAuthHeader())
+                    .header("Content-Type", "application/json")
                     .uri(URI.create(BASE_URL + "/" + meetingId))
                     .DELETE()
                     .build();

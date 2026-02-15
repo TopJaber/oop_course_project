@@ -1,5 +1,8 @@
 package client_package;
 
+import client_package.api.AuthContext;
+import client_package.model.UserProfile;
+import client_package.model.UserProfileDTO;
 import client_package.view.*;
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -26,9 +29,24 @@ public class Main {
 
         UIManager.put("Button.focusPainted", false);
         UIManager.put("Button.foreground", Color.WHITE);
+
         SwingUtilities.invokeLater(() -> {
-            MainWindow window = new MainWindow();
-            window.setVisible(true);
+
+            LoginDialog dialog = new LoginDialog(null);
+            dialog.setVisible(true);
+
+            if (!dialog.isSucceeded()) {
+                System.exit(0);
+            }
+
+            UserProfile profile = dialog.getProfile();
+
+            MainWindow mainWindow = new MainWindow(
+                    profile.getUsername(),
+                    profile.getRoles().getFirst(),          // пока может быть хардкод
+                    profile.isPasswordChanged()
+            );
+            mainWindow.setVisible(true);
         });
     }
 }
