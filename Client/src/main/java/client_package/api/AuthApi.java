@@ -44,7 +44,6 @@ public class AuthApi {
             List<String> roles = new ArrayList<>();
             root.get("roles").forEach(r -> roles.add(r.asText()));
 
-            // 🔥 ВОТ ЭТОГО НЕ ХВАТАЛО
             AuthContext.authenticate(
                     username,
                     password,

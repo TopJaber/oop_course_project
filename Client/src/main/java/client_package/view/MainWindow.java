@@ -92,10 +92,17 @@ public class MainWindow extends JFrame {
 
         add(tabs, BorderLayout.CENTER);
 
+        JButton changePasswordButton = new JButton("Сменить пароль");
+
+        changePasswordButton.addActionListener(e -> {
+            new ChangePasswordDialog();
+        });
+
         // ---------- Статусная строка ----------
         JLabel statusLabel = new JLabel("Роль: " + role);
         statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         add(statusLabel, BorderLayout.SOUTH);
+        add(changePasswordButton, BorderLayout.SOUTH);
 
         setVisible(true);
     }
