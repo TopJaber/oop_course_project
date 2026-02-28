@@ -30,7 +30,6 @@ public class UserController {
                 .findByUsername(authentication.getName())
                 .orElseThrow();
 
-        // проверяем старый пароль
         if (!passwordEncoder.matches(
                 dto.getOldPassword(),
                 user.getPassword())) {
@@ -40,7 +39,6 @@ public class UserController {
                     .body("Старый пароль неверный");
         }
 
-        // сохраняем новый
         user.setPassword(
                 passwordEncoder.encode(dto.getNewPassword()));
 

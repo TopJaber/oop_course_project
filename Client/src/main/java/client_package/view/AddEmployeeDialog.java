@@ -15,7 +15,6 @@ public class AddEmployeeDialog extends JDialog {
 
     private EmployeeDTO employee; // редактируемый сотрудник
 
-    // Конструктор для добавления нового сотрудника
     public AddEmployeeDialog(JFrame parent) {
         this(parent, null);
     }

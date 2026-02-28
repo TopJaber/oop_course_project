@@ -43,7 +43,7 @@ public class Main {
 
             MainWindow mainWindow = new MainWindow(
                     profile.getUsername(),
-                    profile.getRoles().getFirst(),          // пока может быть хардкод
+                    profile.getRoles().getFirst(),
                     profile.isPasswordChanged()
             );
             mainWindow.setVisible(true);

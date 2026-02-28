@@ -31,21 +31,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService(UserRepository userRepository) {
-//        return username -> {
-//            User user = userRepository.findByUsername(username)
-//                    .orElseThrow(() ->
-//                            new UsernameNotFoundException("User not found"));
-//
-//            return org.springframework.security.core.userdetails.User
-//                    .withUsername(user.getUsername())
-//                    .password(user.getPassword())   // ← БЕЗ encode()
-//                    .authorities(user.getRoles().toArray(new String[0]))
-//                    .build();
-//        };
-//    }
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

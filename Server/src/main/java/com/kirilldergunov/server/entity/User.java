@@ -36,8 +36,6 @@ public class User implements UserDetails {
 
     public User() {}
 
-    // ================= UserDetails =================
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -75,8 +73,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-    // ================= getters / setters =================
 
     public Long getId() {
         return id;

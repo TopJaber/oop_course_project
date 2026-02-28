@@ -67,7 +67,7 @@ public class LoginDialog extends JDialog {
         try {
             profile = AuthApi.login(username, password);
 
-            succeeded = true;   // 🔥 ВОТ ЭТОГО НЕ ХВАТАЛО
+            succeeded = true;
             dispose();
 
         } catch (RuntimeException ex) {

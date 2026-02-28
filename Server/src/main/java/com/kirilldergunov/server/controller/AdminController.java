@@ -33,7 +33,6 @@ public class AdminController {
         User user = new User();
         user.setUsername(req.getUsername());
 
-        // временный пароль
         user.setPassword(passwordEncoder.encode("12345"));
         user.setPasswordChanged(false);
 
